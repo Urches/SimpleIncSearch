@@ -11,6 +11,7 @@
             flex-direction: column;
         }
     </style>
+    <script src="js/DateUtils.js"></script>
     <script src="js/EventEmmiter.js"></script>
     <script src="js/Ajax.js"></script>
     <script src="js/AjaxMock.js"></script>
@@ -21,12 +22,16 @@
             let store = new SuggestionsStore();
 
             document.getElementById('searchField').oninput = function (event) {
-                let value = document.getElementById('searchField').value;
-                if (value) {
-                    currentValue = value;
-                    store.onPrepareSuggestion.notify(value);
-                };
+                throttle(() => {
+                    let value = document.getElementById('searchField').value;
+                    if (value) {
+                        currentValue = value;
+                        store.onPrepareSuggestion.notify(value);
+                    };
+                }, 50)();
             };
+
+
 
             store.onSuggestionLoaded.subscribe((data) => {
                 console.log('display suggestion by value: ' + data.value);
@@ -36,6 +41,36 @@
                         '</div>';
                 });
             });
+
+            function throttle(func, ms) {
+
+                var isThrottled = false,
+                    savedArgs,
+                    savedThis;
+
+                function wrapper() {
+
+                    if (isThrottled) { // (2)
+                        savedArgs = arguments;
+                        savedThis = this;
+                        return;
+                    }
+
+                    func.apply(this, arguments); // (1)
+
+                    isThrottled = true;
+
+                    setTimeout(function () {
+                        isThrottled = false; // (3)
+                        if (savedArgs) {
+                            wrapper.apply(savedThis, savedArgs);
+                            savedArgs = savedThis = null;
+                        }
+                    }, ms);
+                }
+
+                return wrapper;
+            }
         };
     </script>
 </head>

@@ -18,7 +18,7 @@ class SuggestionsStore {
 
                 let time = new Date();
                 let callback = (suggestion) => {
-                    console.log('ajax response by value: "' + value + '" at time: ' + this.formatDate(time) + ' received');
+                    console.log('ajax response by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' received');
                     //add result in local cache
                     this.localCache.set(value, suggestion);
                     if (!this.lastResivedTime || this.lastResivedTime < time) {
@@ -33,7 +33,7 @@ class SuggestionsStore {
                     } else console.log('response isn\'t relevant');
                 };
 
-                console.log('ajax request by value: "' + value + '" at time: ' + this.formatDate(time) + ' sended');
+                console.log('ajax request by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' added to request pool');
                 this.ajax.executeGetQuery({
                     time,
                     value
@@ -47,9 +47,5 @@ class SuggestionsStore {
                 });
             }
         });
-    }
-
-    formatDate(date) {
-        return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + ':' + date.getMilliseconds();
     }
 }

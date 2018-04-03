@@ -8,6 +8,7 @@ class AjaxMock {
                 let time = entry[0];
                 let query = entry[1];
                 try {
+                    console.log('ajax request by time: ' + DateUtils.prototype.formatDate(time) + ' sended');
                     query();
                 } finally {
                     this.requests.delete(time);
@@ -23,7 +24,7 @@ class AjaxMock {
             if(queryTime < time){
                 let value = request[1];
                 this.requests.delete(queryTime); 
-                console.log('ajax request by value: "' + value + '" and request time: ' + this.formatDate(time) + ' canceled');
+                console.log('ajax request by value: "' + value + '" and request time: ' + DateUtils.prototype.formatDate(time) + ' canceled');
             }
         });
     }
@@ -31,8 +32,7 @@ class AjaxMock {
     executeGetQuery(responseBody, callback){   
         let delayTime = 100 + (Math.random()*1900);
         //console.log('ajax query delay time: ' + delayTime + ' ms');
-
-        
+       
         let bindQuery = this.mockGetQuery.bind(this, responseBody, callback); 
         let delayQuery = this.delay(bindQuery, delayTime); 
         
