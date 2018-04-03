@@ -19,28 +19,24 @@
         window.onload = function () {
 
             let store = new SuggestionsStore();
-            let currentValue;
 
             document.getElementById('searchField').oninput = function (event) {
                 let value = document.getElementById('searchField').value;
                 if (value) {
-                currentValue = value;
+                    currentValue = value;
                     store.onPrepareSuggestion.notify(value);
                 };
             };
 
             store.onSuggestionLoaded.subscribe((data) => {
-                console.log('suggestion by: ' + data.value);
-                if (currentValue == data.value) {
-                    //display suggestion
-                    document.getElementById('suggestion').innerHTML = '';
-                    data.suggestion.forEach(str => {
-                        document.getElementById('suggestion').innerHTML += '<div>' + str +
-                            '</div>';
-                    });
-                }
+                console.log('display suggestion by value: ' + data.value);
+                document.getElementById('suggestion').innerHTML = '';
+                data.suggestion.forEach(str => {
+                    document.getElementById('suggestion').innerHTML += '<div>' + str +
+                        '</div>';
+                });
             });
-        }
+        };
     </script>
 </head>
 
