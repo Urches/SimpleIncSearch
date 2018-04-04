@@ -4,84 +4,28 @@
 <head>
     <meta charset="utf-8">
     <title>Increment search</title>
-
-    <style>
-        #suggestion {
-            display: flex;
-            flex-direction: column;
-        }
-    </style>
-    <script src="js/DateUtils.js"></script>
-    <script src="js/EventEmmiter.js"></script>
-    <script src="js/Ajax.js"></script>
-    <script src="js/AjaxMock.js"></script>
-    <script src="js/SuggestionsStore.js"></script>
-    <script>
-        window.onload = function () {
-
-            let store = new SuggestionsStore();
-
-            document.getElementById('searchField').oninput = function (event) {
-                throttle(() => {
-                    let value = document.getElementById('searchField').value;
-                    if (value) {
-                        currentValue = value;
-                        store.onPrepareSuggestion.notify(value);
-                    };
-                }, 50)();
-            };
-
-
-
-            store.onSuggestionLoaded.subscribe((data) => {
-                console.log('display suggestion by value: ' + data.value);
-                document.getElementById('suggestion').innerHTML = '';
-                data.suggestion.forEach(str => {
-                    document.getElementById('suggestion').innerHTML += '<div>' + str +
-                        '</div>';
-                });
-            });
-
-            function throttle(func, ms) {
-
-                var isThrottled = false,
-                    savedArgs,
-                    savedThis;
-
-                function wrapper() {
-
-                    if (isThrottled) { // (2)
-                        savedArgs = arguments;
-                        savedThis = this;
-                        return;
-                    }
-
-                    func.apply(this, arguments); // (1)
-
-                    isThrottled = true;
-
-                    setTimeout(function () {
-                        isThrottled = false; // (3)
-                        if (savedArgs) {
-                            wrapper.apply(savedThis, savedArgs);
-                            savedArgs = savedThis = null;
-                        }
-                    }, ms);
-                }
-
-                return wrapper;
-            }
-        };
-    </script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/support/DateUtils.js"></script>
+    <script src="js/support/EventEmmiter.js"></script>
+    <script src="js/model/Suggestion.js"></script>
+    <script src="js/model/Model.js"></script>
+    <script src="js/view/SearchView.js"></script>
+    <script src="js/controller/SearchController.js"></script>
+    <script src="js/core.js"></script>
 </head>
 
 <body>
     <div>
-        <input type="search" id='searchField'>
-        <div id='suggestion'></div>
+        <input type="search" class='searchField'>
+        <div class='suggestions'>
+            <div class='suggestion-item'></div>
+            <div class='suggestion-item'></div>
+            <div class='suggestion-item'></div>
+            <div class='suggestion-item'></div>
+            <div class='suggestion-item'></div>
+        </div>
     </div>
-
-    <button id="searchButton">search</button>
+    <button class="searchButton">search</button>
 </body>
 
 </html>

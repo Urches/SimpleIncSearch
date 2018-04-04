@@ -1,0 +1,13 @@
+#suggestion {
+    display: flex;
+    flex-direction: column;
+}
+
+.suggestions {
+    display: flex;
+    flex-direction: column;
+}
+
+.suggestions .suggestion-item {
+
+}
