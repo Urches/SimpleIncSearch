@@ -1,27 +1,76 @@
 class Model {
     constructor() {
-        //Map<String, Suggestion>
-        this.localCache = new Map();
-        this.onSuggestionLoaded = new EventEmitter();
+        this.onChange = new EventEmitter();
+        //time of last accepted request
+        this.lastAcceptedTime;
+        //Map<Date, request>
+        this.requestPool = new Map();
     }
 
-    querySuggestion(value, reject) {
-        //get suggestions from local cache
-        let suggestion = this.localCache.get(value);
-
-        //if local cahce doesn't contain suggestion
-        if (!suggestion) {
-            console.log('local cache doesn\'t conatain suggestion by value: "' + value);
-            reject();
-        } else {
-            console.log('suggestion by value: "' + value + '" found in local cache');
-            this.onSuggestionLoaded.notify(suggestion);
-        }
+    querySuggestion(value) {
+        if(value){
+            let time = new Date();
+            //promise cancel realisation
+            let token = {
+                cancel: () => {}
+            };
+            //wrapper on promise
+            let query = () => {
+                new Promise((resolve, reject) => {
+    
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', '/search' + '?value=' + value);
+    
+                    xhr.onload = () => {
+                        console.log('ajax request by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' arrived');
+                        resolve(xhr.responseText);
+                    };
+    
+                    token.cancel = () => {
+                        console.log('ajax request by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' abort');
+                        xhr.abort();
+                    };
+    
+                    xhr.onerror = () => {
+                        console.log("Exception " + xhr.status + ': ' + xhr.statusText);
+                        reject();
+                    }
+    
+                    console.log('ajax request by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' send');
+                    xhr.send();
+                }).then((text) => {
+                    if (!this.lastAcceptedTime || this.lastAcceptedTime < time) {
+                        this.lastAcceptedTime = time;
+                        this.requestPool.delete(time);
+                        this.cancelQueries();
+                        this.onChange.notify(text.split(' '));
+                    } else console.log('ajax response by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' isn\'t relevant');
+                });
+            }
+    
+            //add query in pool
+            this.requestPool.set(time, {
+                query,
+                token
+            });
+            //execute query
+            query();
+        }  else this.onChange.notify();
     }
 
-    addSuggestion(time, value, text) {
-        let suggestion = new Suggestion(time, value, text.split(' '));
-        console.log('add suggestion by value: "' + value + '" in local cache');
-        this.localCache.set(suggestion.value, suggestion);
+    /**
+     * Delete and cancel requests from pool where request.time < time
+     * By default request.time = time of last accepted request   
+     * @param {class Date} time 
+     */
+    cancelQueries(time = this.lastAcceptedTime) {
+        Array.from(this.requestPool.entries()).forEach(request => {
+            let reqTime = request[0];
+            let reqToken = request[1].token;
+            if (reqTime < time) {
+                reqToken.cancel();
+                this.requestPool.delete(reqTime);
+            }
+        });
     }
 }

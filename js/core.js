@@ -1,6 +1,7 @@
 window.onload = function () {
+    console.log('init start');
     let model = new Model();
-    let controller = new SearchController(model); 
-    let view = new SearchView(model, controller);
+    let view = new SearchView(model);
+    let controller = new SearchController(model, view);     
     console.log('init complete');
 }

@@ -1,52 +1,32 @@
 class SearchController {
     /**
-     * @param {class Model} model 
+     * @param {class Model} model
+     * @param {class SearchView} view
      */
-    constructor(model) {
+    constructor(model, view) {
         this.model = model;
-        this.lastAcceptedTime;
+        this.view = view;
+
+        this.view.onSearchValueInput.subscribe(
+            this.throttle(() => {
+                    //ask suggestion from model
+                    let value = this.view.getSearchValue();
+                    this.model.querySuggestion(value);
+            }, 100)
+        );
     }
 
-    querySuggestion(value) {
-        let onReject = this.queryServerSuggestion.bind(this, value);
-        this.queryLocalSuggestion(value, onReject);
-    }
+    throttle(callback, limit) {
+        let wait = false;
 
-    queryLocalSuggestion(value, reject) {
-        this.model.querySuggestion(value, reject);
-    }
-
-    queryServerSuggestion(value) {
-        let time = new Date();
-
-        let onResolve = (text) => {
-            this.queryAddSuggestion(time, value, text);
-
-            if(!this.lastAcceptedTime || this.lastAcceptedTime < time){
-                this.lastAcceptedTime = time;
-                this.queryLocalSuggestion(value);
-            } else console.log('ajax response by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' isn\'t relevant');  
-        }
-
-        new Promise((resolve, reject) => {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'http://localhost:8081/IncrementalSearch/search' + '?value=' + value, true);
-            console.log('ajax request by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' send');
-            xhr.send();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState != 4) return;
-                if (xhr.status != 200) {
-                    console.log("Exception " + xhr.status + ': ' + xhr.statusText);
-                    reject();
-                } else {
-                    console.log('ajax request by value: "' + value + '" at time: ' + DateUtils.prototype.formatDate(time) + ' arrived');
-                    resolve(xhr.responseText);
-                }
+        return function () {
+            if (!wait) {
+                wait = true;
+                callback();
+                setTimeout(function () {
+                    wait = false;
+                }, limit);
             }
-        }).then(onResolve);
-    }
-
-    queryAddSuggestion(time, value, text) {
-        this.model.addSuggestion(time, value, text);
+        }
     }
 }

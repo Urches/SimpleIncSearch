@@ -1,44 +1,29 @@
 class SearchView {
-    constructor(model, controller) {
+    constructor(model) {
         this.model = model;
-        this.controller = controller;
+        this.onSearchValueInput = new EventEmitter();
 
-        let self = this;
-        document.querySelector('.searchField').oninput = function () {
-            self.throttle(() => {
-                let value = document.querySelector('.searchField').value;
-                if (value) {
-                    self.controller.querySuggestion(value);
-                } else self.clean();
-            }, 50)();
+        document.querySelector('.searchField').oninput = () => {
+            this.onSearchValueInput.notify();     
         };
 
-        model.onSuggestionLoaded.subscribe((suggestion) => {
-            console.log('display suggestion by value: ' + suggestion.value);
-            Array.from(document.querySelectorAll('.suggestion-item')).forEach((item, index) => {
-                item.innerText = suggestion.text[index];
-            });
+        model.onChange.subscribe((suggestion) => {
+            if(suggestion){
+                console.log('display suggestion: ' + suggestion);
+                Array.from(document.querySelectorAll('.suggestion-item')).forEach((item, index) => {
+                    item.innerText = suggestion[index];
+                });
+            } else this.clean();
         });
     };
+
+    getSearchValue(){
+        return document.querySelector('.searchField').value;
+    }
 
     clean() {
         Array.from(document.querySelectorAll('.suggestion-item')).forEach(item => {
             item.innerText = '';
         });
-    }
-
-    throttle(callback, limit) {
-        var wait = false;
-
-        return function () {
-            if (!wait) {
-                wait = true;
-                callback.apply(null, arguments);
-                
-                setTimeout(function () {
-                    wait = false;
-                }, limit);
-            }
-        }
     }
 }
